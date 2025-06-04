@@ -40,7 +40,7 @@
 }
 
 .table-container {
-  overflow-x: auto;
+  overflow:hidden;
 }
 
 .product-table {
@@ -213,7 +213,7 @@ th {
 
 .dropdown-menu {
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   right: 0;
   background: #fff;
   border: 1px solid #ccc;
