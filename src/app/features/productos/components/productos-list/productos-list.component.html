@@ -1,0 +1,79 @@
+<div class="logo-container">
+  <img src="assets/logo.png" alt="Logo" class="logo" />
+</div>
+<div class="product-table-wrapper">
+  <div class="header">
+    <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search..."
+      class="search-input" />
+    <button class="add-button" (click)="openModal()">Agregar</button>
+  </div>
+
+  <div class="table-container">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <th style="text-align: center;"></th>
+          <th>Nombre del producto</th>
+          <th>
+            Descripción
+            <span class="tooltip">i
+              <span class="tooltiptext">Descripción del producto financiero</span>
+            </span>
+          </th>
+          <th>
+            Fecha de Liberación
+            <span class="tooltip">i
+              <span class="tooltiptext">Fecha en que se liberó</span>
+            </span>
+          </th>
+          <th>
+            Fecha de Reestructuración
+            <span class="tooltip">i
+              <span class="tooltiptext">Última reestructuración</span>
+            </span>
+          </th>
+          <th></th> <!-- Para ícono de acciones -->
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of paginatedData">
+          <td>
+            <div class="avatar">{{ item.name ? item.name.substring(0, 2).toUpperCase() : 'JG' }}</div>
+          </td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.description }}</td>
+          <td>{{ item.date_release | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ item.date_revision | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <div class="dropdown-container" (click)="toggleMenu(item)" tabindex="0" (blur)="closeMenu()">
+              <button class="menu-button">
+                ⋮
+              </button>
+              <div class="dropdown-menu" *ngIf="openedMenuId === item.id">
+                <button (click)="openEditModal(item)">Editar</button>
+                <button (click)="onEliminar(item)">Eliminar</button>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span>{{ paginatedData.length }} Resultados</span>
+    <select (change)="onPageSizeChange($event)">
+      <option *ngFor="let size of pageSizes" [value]="size" [selected]="size === pageSize">{{ size }}</option>
+    </select>
+  </div>
+</div>
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content" *ngIf="productosSel == undefined">
+    <button class="modal-close" (click)="closeModal()">✖</button>
+    <app-productos-create (productoGuardado)="onProductoGuardado()"></app-productos-create>
+  </div>
+  <div class="modal-content" *ngIf="productosSel != undefined">
+    <button class="modal-close" (click)="closeModal()">✖</button>
+    <app-productos-edit [productoAEditar]="productosSel" (productoGuardado)="onProductoGuardado()"></app-productos-edit>
+  </div>
+</div>

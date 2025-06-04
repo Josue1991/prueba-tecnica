@@ -1,0 +1,63 @@
+<div class="form-wrapper">
+  <h2>Editar Producto</h2>
+  <form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="id">ID</label>
+        <input id="id" formControlName="id" />
+        <div class="error" *ngIf="productoForm.get('id')?.touched && productoForm.get('id')?.invalid">
+          <small *ngIf="productoForm.get('id')?.errors?.['required']">Este campo es requerido!</small>
+          <small *ngIf="productoForm.get('id')?.errors?.['pattern']">¡ID no válido!</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Nombre</label>
+        <input id="name" formControlName="name" />
+        <div class="error" *ngIf="productoForm.get('name')?.touched && productoForm.get('name')?.invalid">
+          <small *ngIf="productoForm.get('name')?.errors?.['required']">El nombre es requerido.</small>
+          <small *ngIf="productoForm.get('name')?.errors?.['minlength']">Debe tener más de 6 caracteres.</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descripción</label>
+        <input id="description" formControlName="description" />
+        <div class="error" *ngIf="productoForm.get('description')?.touched && productoForm.get('description')?.invalid">
+          <small>Este campo es requerido!</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="logo">Logo</label>
+        <input id="logo" formControlName="logo" />
+        <div class="error" *ngIf="productoForm.get('logo')?.touched && productoForm.get('logo')?.invalid">
+          <small>Este campo es requerido!</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="date_release">Fecha Liberación</label>
+        <input id="date_release" formControlName="date_release" type="date" />
+        <div class="error"
+          *ngIf="productoForm.get('date_release')?.touched && productoForm.get('date_release')?.invalid">
+          <small>Este campo es requerido!</small>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="date_revision">Fecha Revisión</label>
+        <input id="date_revision" formControlName="date_revision" type="date" />
+        <div class="error"
+          *ngIf="productoForm.get('date_revision')?.touched && productoForm.get('date_revision')?.invalid">
+          <small>Este campo es requerido!</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-buttons">
+      <button type="button" (click)="onReset()" class="reset">Reiniciar</button>
+      <button type="submit" class="submit">Enviar</button>
+    </div>
+  </form>
+</div>
