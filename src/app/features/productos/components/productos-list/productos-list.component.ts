@@ -1,11 +1,21 @@
-import { Component, Input } from '@angular/core';
-import { ProductoFinanciero } from '../../models/producto-financiero';
+import { Component } from '@angular/core';
+import { ProductoFinanciero } from '../../../../core/domain/entities/producto-financiero.entity';
 import { ProductosCreateComponent } from '../productos-create/productos-create.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ProductoService } from '../../services/producto-service.service';
 import { ProductosEditComponent } from '../productos-edit/productos-edit.component';
+import { GetAllProductosUseCase } from '../../../../core/application/use-cases/get-all-productos.use-case';
+import { DeleteProductoUseCase } from '../../../../core/application/use-cases/delete-producto.use-case';
+import { PaginationService } from '../../../../shared/services/pagination.service';
+import { FilterService } from '../../../../shared/services/filter.service';
+import { SortService, SortDirection } from '../../../../shared/services/sort.service';
 
+/**
+ * Componente de lista de productos
+ * Refactorizado siguiendo Clean Architecture y SOLID
+ * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
+ * - Delega responsabilidades a servicios especializados (Single Responsibility)
+ */
 @Component({
   selector: 'app-productos-list',
   imports: [
@@ -29,22 +39,34 @@ export class ProductosListComponent {
 
   searchTerm = '';
   sortColumn: keyof ProductoFinanciero | '' = '';
-  sortDirection: 'asc' | 'desc' = 'asc';
+  sortDirection: SortDirection = 'asc';
 
   filteredData: ProductoFinanciero[] = [];
   paginatedData: ProductoFinanciero[] = [];
   openedMenuId: string | null = null;
 
-  constructor(private readonly productoService: ProductoService) { }
+  constructor(
+    private readonly getAllProductosUseCase: GetAllProductosUseCase,
+    private readonly deleteProductoUseCase: DeleteProductoUseCase,
+    private readonly paginationService: PaginationService,
+    private readonly filterService: FilterService,
+    private readonly sortService: SortService
+  ) { }
 
   ngOnInit(): void {
     this.loadData();
   }
 
-  loadData() {
-    this.productoService.getProductos().subscribe(resultado => {
-      this.paginatedData = resultado;
-      console.log(this.paginatedData);
+  loadData(): void {
+    this.getAllProductosUseCase.execute().subscribe({
+      next: (productos) => {
+        this.productos = productos;
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error('Error al cargar productos:', error);
+        alert('Error al cargar los productos');
+      }
     });
   }
 
@@ -65,30 +87,24 @@ export class ProductosListComponent {
   }
 
   applyFilters(): void {
-    const term = this.searchTerm.toLowerCase();
-    if (term != "") {
-      this.filteredData = this.paginatedData.filter(p =>
-        (p.name ?? '').toLowerCase().includes(term) ||
-        (p.description ?? '').toLowerCase().includes(term)
-      );
-    }
-    else {
-      this.loadData();
-    }
+    // Aplicar filtrado usando el servicio especializado
+    this.filteredData = this.filterService.filter(
+      this.productos,
+      this.searchTerm,
+      ['name', 'description']
+    );
 
     this.applySorting();
   }
 
   applySorting(): void {
     if (this.sortColumn) {
-      this.filteredData.sort((a, b) => {
-        const valueA = a[this.sortColumn as keyof ProductoFinanciero] ?? '';
-        const valueB = b[this.sortColumn as keyof ProductoFinanciero] ?? '';
-
-        return this.sortDirection === 'asc'
-          ? valueA > valueB ? 1 : -1
-          : valueA < valueB ? 1 : -1;
-      });
+      // Aplicar ordenamiento usando el servicio especializado
+      this.filteredData = this.sortService.sort(
+        this.filteredData,
+        this.sortColumn,
+        this.sortDirection
+      );
     }
 
     this.updatePaginatedData();
@@ -96,7 +112,8 @@ export class ProductosListComponent {
 
   sortBy(column: keyof ProductoFinanciero): void {
     if (this.sortColumn === column) {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      // Alternar dirección usando el servicio
+      this.sortDirection = this.sortService.toggleDirection(this.sortDirection);
     } else {
       this.sortColumn = column;
       this.sortDirection = 'asc';
@@ -106,17 +123,20 @@ export class ProductosListComponent {
   }
 
   updatePaginatedData(): void {
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedData = this.filteredData.slice(start, end);
+    // Aplicar paginación usando el servicio especializado
+    this.paginatedData = this.paginationService.paginate(
+      this.filteredData,
+      this.currentPage,
+      this.pageSize
+    );
   }
 
   get totalPages(): number {
-    return Math.ceil(this.filteredData.length / this.pageSize);
+    return this.paginationService.getTotalPages(this.filteredData.length, this.pageSize);
   }
 
   get pages(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    return this.paginationService.getPageNumbers(this.totalPages);
   }
   openModal() {
     this.showModal = true;
@@ -131,10 +151,25 @@ export class ProductosListComponent {
     this.productosSel = item;
   }
 
-  onEliminar(item: ProductoFinanciero) {
-    this.productoService.eliminarProducto(item).subscribe(resultado => {
-      alert(resultado.message);
-      this.applyFilters(); // Para que se apliquen búsquedas, paginación, etc.
+  onEliminar(item: ProductoFinanciero): void {
+    if (!item.id) {
+      alert('Error: ID del producto no válido');
+      return;
+    }
+
+    if (!confirm(`¿Está seguro de eliminar el producto "${item.name}"?`)) {
+      return;
+    }
+
+    this.deleteProductoUseCase.execute(item.id).subscribe({
+      next: () => {
+        alert('Producto eliminado exitosamente');
+        this.loadData();
+      },
+      error: (error) => {
+        console.error('Error al eliminar producto:', error);
+        alert('Error al eliminar el producto');
+      }
     });
   }
 
@@ -150,9 +185,6 @@ export class ProductosListComponent {
 
   onProductoGuardado(): void {
     this.closeModal();
-    this.productoService.getProductos().subscribe(resultado => {
-      this.productos = resultado;
-      this.applyFilters(); // Para que se apliquen búsquedas, paginación, etc.
-    });
+    this.loadData();
   }
 }

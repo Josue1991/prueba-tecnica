@@ -42,8 +42,8 @@
           </td>
           <td>{{ item.name }}</td>
           <td>{{ item.description }}</td>
-          <td>{{ item.date_release | date: 'dd/MM/yyyy' }}</td>
-          <td>{{ item.date_revision | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ item.dateRelease| date: 'dd/MM/yyyy' }}</td>
+          <td>{{ item.dateRevision | date: 'dd/MM/yyyy' }}</td>
           <td>
             <div class="dropdown-container" (click)="toggleMenu(item)" tabindex="0" (blur)="closeMenu()">
               <button class="menu-button">
@@ -67,6 +67,7 @@
     </select>
   </div>
 </div>
+
 <div class="modal-overlay" *ngIf="showModal">
   <div class="modal-content" *ngIf="productosSel == undefined">
     <button class="modal-close" (click)="closeModal()">✖</button>

@@ -1,9 +1,14 @@
 import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ProductoService } from '../../services/producto-service.service';
-import { ProductoFinanciero } from '../../models/producto-financiero';
+import { ProductoFinanciero } from '../../../../core/domain/entities/producto-financiero.entity';
+import { UpdateProductoUseCase } from '../../../../core/application/use-cases/update-producto.use-case';
 
+/**
+ * Componente de edición de productos
+ * Refactorizado siguiendo Clean Architecture y SOLID
+ * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
+ */
 @Component({
   selector: 'app-productos-edit',
   standalone: true,
@@ -17,7 +22,10 @@ export class ProductosEditComponent implements OnInit {
 
   productoForm: ReturnType<FormBuilder['group']>;
 
-  constructor(private readonly fb: FormBuilder, private readonly productoService: ProductoService) {
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly updateProductoUseCase: UpdateProductoUseCase
+  ) {
     this.productoForm = this.fb.group({
       id: [{ value: '', disabled: true }, [Validators.required]],
       name: ['', Validators.required],
@@ -31,46 +39,64 @@ export class ProductosEditComponent implements OnInit {
   ngOnInit(): void {
     if (this.productoAEditar) {
       const formattedProducto = {
-        ...this.productoAEditar,
-        date_release: this.productoAEditar.date_release ? this.formatDate(this.productoAEditar.date_release) : "",
-        date_revision: this.productoAEditar.date_revision ? this.formatDate(this.productoAEditar.date_revision) :""
+        id: this.productoAEditar.id,
+        name: this.productoAEditar.name,
+        description: this.productoAEditar.description,
+        logo: this.productoAEditar.logo,
+        date_release: this.formatDate(this.productoAEditar.dateRelease),
+        date_revision: this.formatDate(this.productoAEditar.dateRevision)
       };
 
       this.productoForm.patchValue(formattedProducto);
     }
   }
 
-  private formatDate(dateValue: string | Date | undefined): string {
+  private formatDate(dateValue: Date): string {
     if (!dateValue) {
       return '';
     }
-    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+    const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
     return date.toISOString().substring(0, 10); // 'YYYY-MM-DD'
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.productoForm.valid) {
-      const formValue = this.productoForm.getRawValue();
-      const dateRelease = new Date(formValue.date_release);
-      const dateRevision = new Date(formValue.date_revision);
+      try {
+        const formValue = this.productoForm.getRawValue();
+        
+        // Crear la entidad del dominio
+        const producto = new ProductoFinanciero(
+          formValue.id,
+          formValue.name,
+          formValue.description,
+          formValue.logo,
+          new Date(formValue.date_release),
+          new Date(formValue.date_revision)
+        );
 
-      const actualizado = {
-        ...formValue,
-        date_release: dateRelease.toISOString(),
-        date_revision: dateRevision.toISOString()
-      };
-
-      this.productoService.actualizarProducto(actualizado).subscribe(res => {
-        alert(res.message);
-        this.productoGuardado.emit();
-      });
+        // Ejecutar el caso de uso
+        this.updateProductoUseCase.execute(producto).subscribe({
+          next: () => {
+            alert('Producto actualizado exitosamente');
+            this.productoGuardado.emit();
+          },
+          error: (error) => {
+            console.error('Error al actualizar producto:', error);
+            alert(`Error al actualizar el producto: ${error.message}`);
+          }
+        });
+      } catch (error: any) {
+        alert(`Error de validación: ${error.message}`);
+      }
     } else {
       this.productoForm.markAllAsTouched();
-      alert('Por favor complete todos los campos.');
+      alert('Por favor complete todos los campos');
     }
   }
 
-  onReset() {
-    this.productoForm.reset(this.productoAEditar);
+  onReset(): void {
+    if (this.productoAEditar) {
+      this.ngOnInit();
+    }
   }
 }
