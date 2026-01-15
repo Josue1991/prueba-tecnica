@@ -24,7 +24,9 @@
         <label for="description">Descripción</label>
         <input id="description" formControlName="description" />
         <div class="error" *ngIf="productoForm.get('description')?.touched && productoForm.get('description')?.invalid">
-          <small>Este campo es requerido!</small>
+          <small *ngIf="productoForm.get('description')?.errors?.['required']">La descripción es requerida.</small>
+          <small *ngIf="productoForm.get('description')?.errors?.['minlength']">Debe tener más de 10 caracteres.</small>
+          <small *ngIf="productoForm.get('description')?.errors?.['maxlength']">Debe tener menos de 200 caracteres.</small>
         </div>
       </div>
 

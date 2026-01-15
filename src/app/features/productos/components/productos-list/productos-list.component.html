@@ -16,19 +16,34 @@
           <th>Nombre del producto</th>
           <th>
             Descripción
-            <span class="tooltip">i
+            <span class="tooltip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
               <span class="tooltiptext">Descripción del producto financiero</span>
             </span>
           </th>
           <th>
             Fecha de Liberación
-            <span class="tooltip">i
+            <span class="tooltip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
               <span class="tooltiptext">Fecha en que se liberó</span>
             </span>
           </th>
           <th>
             Fecha de Reestructuración
-            <span class="tooltip">i
+            <span class="tooltip">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
               <span class="tooltiptext">Última reestructuración</span>
             </span>
           </th>
@@ -56,6 +71,11 @@
             </div>
           </td>
         </tr>
+        <tr *ngIf="paginatedData.length === 0">
+          <td colspan="6" class="empty-message">
+            No se encontraron productos
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -69,12 +89,16 @@
 </div>
 
 <div class="modal-overlay" *ngIf="showModal">
-  <div class="modal-content" *ngIf="productosSel == undefined">
+  <div class="modal-content" *ngIf="productosSel == undefined && action === 'crear'">
     <button class="modal-close" (click)="closeModal()">✖</button>
     <app-productos-create (productoGuardado)="onProductoGuardado()"></app-productos-create>
   </div>
-  <div class="modal-content" *ngIf="productosSel != undefined">
+  <div class="modal-content" *ngIf="productosSel != undefined && action === 'editar'">
     <button class="modal-close" (click)="closeModal()">✖</button>
     <app-productos-edit [productoAEditar]="productosSel" (productoGuardado)="onProductoGuardado()"></app-productos-edit>
+  </div>
+  <div class="modal-content" *ngIf="productosSel != undefined && action === 'eliminar'">
+    <button class="modal-close" (click)="closeModal()">✖</button>
+    <app-productos-delete [productoAEliminar]="productosSel" (productoEliminado)="onProductoEliminado()"></app-productos-delete>
   </div>
 </div>

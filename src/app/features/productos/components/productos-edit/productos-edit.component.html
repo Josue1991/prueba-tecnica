@@ -4,7 +4,7 @@
     <div class="form-grid">
       <div class="form-group">
         <label for="id">ID</label>
-        <input id="id" formControlName="id" />
+        <input id="id" formControlName="id" [readonly]="true" />
         <div class="error" *ngIf="productoForm.get('id')?.touched && productoForm.get('id')?.invalid">
           <small *ngIf="productoForm.get('id')?.errors?.['required']">Este campo es requerido!</small>
           <small *ngIf="productoForm.get('id')?.errors?.['pattern']">¡ID no válido!</small>

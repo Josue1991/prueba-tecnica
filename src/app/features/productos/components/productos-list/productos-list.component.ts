@@ -9,6 +9,7 @@ import { DeleteProductoUseCase } from '../../../../core/application/use-cases/de
 import { PaginationService } from '../../../../shared/services/pagination.service';
 import { FilterService } from '../../../../shared/services/filter.service';
 import { SortService, SortDirection } from '../../../../shared/services/sort.service';
+import { ProductosDeleteComponent } from '../productos-delete/productos-delete.component';
 
 /**
  * Componente de lista de productos
@@ -23,7 +24,8 @@ import { SortService, SortDirection } from '../../../../shared/services/sort.ser
     ReactiveFormsModule,
     CommonModule,
     ProductosCreateComponent,
-    ProductosEditComponent],
+    ProductosEditComponent,
+    ProductosDeleteComponent],
   templateUrl: './productos-list.component.html',
   styleUrl: './productos-list.component.scss',
   standalone: true
@@ -31,6 +33,7 @@ import { SortService, SortDirection } from '../../../../shared/services/sort.ser
 export class ProductosListComponent {
   productos: ProductoFinanciero[] = [];
   productosSel: ProductoFinanciero | undefined;
+  action: 'crear' | 'editar' | 'eliminar' = 'crear';
 
   pageSize = 5;
   currentPage = 1;
@@ -47,7 +50,6 @@ export class ProductosListComponent {
 
   constructor(
     private readonly getAllProductosUseCase: GetAllProductosUseCase,
-    private readonly deleteProductoUseCase: DeleteProductoUseCase,
     private readonly paginationService: PaginationService,
     private readonly filterService: FilterService,
     private readonly sortService: SortService
@@ -140,6 +142,7 @@ export class ProductosListComponent {
   }
   openModal() {
     this.showModal = true;
+    this.action = 'crear';
   }
 
   closeModal() {
@@ -148,6 +151,7 @@ export class ProductosListComponent {
 
   openEditModal(item: ProductoFinanciero) {
     this.showModal = true;
+    this.action = 'editar';
     this.productosSel = item;
   }
 
@@ -156,21 +160,11 @@ export class ProductosListComponent {
       alert('Error: ID del producto no válido');
       return;
     }
-
-    if (!confirm(`¿Está seguro de eliminar el producto "${item.name}"?`)) {
-      return;
-    }
-
-    this.deleteProductoUseCase.execute(item.id).subscribe({
-      next: () => {
-        alert('Producto eliminado exitosamente');
-        this.loadData();
-      },
-      error: (error) => {
-        console.error('Error al eliminar producto:', error);
-        alert('Error al eliminar el producto');
-      }
-    });
+    else{
+    this.showModal = true;
+    this.action = 'eliminar';
+    this.productosSel = item;
+    }   
   }
 
   toggleMenu(item: ProductoFinanciero) {
@@ -184,6 +178,10 @@ export class ProductosListComponent {
   }
 
   onProductoGuardado(): void {
+    this.closeModal();
+    this.loadData();
+  }
+  onProductoEliminado(): void {
     this.closeModal();
     this.loadData();
   }

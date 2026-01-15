@@ -27,9 +27,9 @@ export class ProductosEditComponent implements OnInit {
     private readonly updateProductoUseCase: UpdateProductoUseCase
   ) {
     this.productoForm = this.fb.group({
-      id: [{ value: '', disabled: true }, [Validators.required]],
-      name: ['', Validators.required],
-      description: ['', Validators.required],
+      id: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\-]+$/)]],
+      name: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
+      description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
       logo: ['', Validators.required],
       date_release: ['', Validators.required],
       date_revision: ['', Validators.required]
