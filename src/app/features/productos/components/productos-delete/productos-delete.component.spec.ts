@@ -35,8 +35,8 @@ describe('ProductosDeleteComponent', () => {
     fixture = TestBed.createComponent(ProductosDeleteComponent);
     component = fixture.componentInstance;
     
-    // Provide input
-    component.productoAEliminar = new ProductoFinanciero(
+    // Configurar input signal usando fixture.componentRef
+    const productoTest = new ProductoFinanciero(
       'test-id',
       'Test Product',
       'Test Description',
@@ -44,6 +44,7 @@ describe('ProductosDeleteComponent', () => {
       new Date(),
       new Date()
     );
+    fixture.componentRef.setInput('productoAEliminar', productoTest);
     
     fixture.detectChanges();
   });
@@ -55,12 +56,13 @@ describe('ProductosDeleteComponent', () => {
   describe('onDelete', () => {
     it('should call deleteProductoUseCase with correct id', () => {
       // Arrange
+      const producto = component.productoAEliminar();
       mockDeleteProductoUseCase.execute.and.returnValue(of(undefined));
       spyOn(window, 'alert');
       spyOn(component.productoEliminado, 'emit');
 
       // Act
-      component.onDelete(component.productoAEliminar);
+      component.onDelete(producto);
 
       // Assert
       expect(mockDeleteProductoUseCase.execute).toHaveBeenCalledWith('test-id');
@@ -70,12 +72,13 @@ describe('ProductosDeleteComponent', () => {
 
     it('should emit productoEliminado event on successful deletion', () => {
       // Arrange
+      const producto = component.productoAEliminar();
       mockDeleteProductoUseCase.execute.and.returnValue(of(undefined));
       spyOn(component.productoEliminado, 'emit');
       spyOn(window, 'alert');
 
       // Act
-      component.onDelete(component.productoAEliminar);
+      component.onDelete(producto);
 
       // Assert
       expect(component.productoEliminado.emit).toHaveBeenCalled();
@@ -108,13 +111,14 @@ describe('ProductosDeleteComponent', () => {
 
     it('should handle deletion error', () => {
       // Arrange
+      const producto = component.productoAEliminar();
       const error = new Error('Deletion failed');
       mockDeleteProductoUseCase.execute.and.returnValue(throwError(() => error));
       spyOn(window, 'alert');
       spyOn(console, 'error');
 
       // Act
-      component.onDelete(component.productoAEliminar);
+      component.onDelete(producto);
 
       // Assert
       expect(console.error).toHaveBeenCalledWith('Error al eliminar producto:', error);

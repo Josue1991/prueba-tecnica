@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
 import { Validators, FormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CreateProductoUseCase } from '../../../../core/application/use-cases/create-producto.use-case';
 import { ProductoFinanciero } from '../../../../core/domain/entities/producto-financiero.entity';
@@ -8,6 +8,7 @@ import { ProductoFinanciero } from '../../../../core/domain/entities/producto-fi
  * Componente de creación de productos
  * Refactorizado siguiendo Clean Architecture y SOLID
  * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
+ * - Usa inject() moderno y output()
  */
 @Component({
   selector: 'app-productos-create',
@@ -16,23 +17,21 @@ import { ProductoFinanciero } from '../../../../core/domain/entities/producto-fi
   styleUrl: './productos-create.component.scss'
 })
 export class ProductosCreateComponent {
-  @Output() productoGuardado = new EventEmitter<void>();
+  // Enfoque moderno: output()
+  productoGuardado = output<void>();
   
-  productoForm: ReturnType<FormBuilder['group']>;
-
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly createProductoUseCase: CreateProductoUseCase
-  ) {
-    this.productoForm = this.fb.group({
-      id: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\-]+$/)]],
-      name: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
-      description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
-      logo: ['', Validators.required],
-      date_release: ['', Validators.required],
-      date_revision: ['', Validators.required]
-    });
-  }
+  // Enfoque moderno: inject()
+  private readonly fb = inject(FormBuilder);
+  private readonly createProductoUseCase = inject(CreateProductoUseCase);
+  
+  productoForm = this.fb.group({
+    id: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\-]+$/)]],
+    name: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
+    description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
+    logo: ['', Validators.required],
+    date_release: ['', Validators.required],
+    date_revision: ['', Validators.required]
+  });
 
   onSubmit(): void {
     if (this.productoForm.valid) {
@@ -41,12 +40,12 @@ export class ProductosCreateComponent {
         
         // Crear la entidad del dominio
         const producto = new ProductoFinanciero(
-          formValue.id,
-          formValue.name,
-          formValue.description,
-          formValue.logo,
-          new Date(formValue.date_release),
-          new Date(formValue.date_revision)
+          formValue.id!,
+          formValue.name!,
+          formValue.description!,
+          formValue.logo!,
+          new Date(formValue.date_release!),
+          new Date(formValue.date_revision!)
         );
 
         // Ejecutar el caso de uso

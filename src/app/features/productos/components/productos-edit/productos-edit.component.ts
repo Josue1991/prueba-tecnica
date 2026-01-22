@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, inject, input, output, effect } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ProductoFinanciero } from '../../../../core/domain/entities/producto-financiero.entity';
@@ -8,6 +8,7 @@ import { UpdateProductoUseCase } from '../../../../core/application/use-cases/up
  * Componente de edición de productos
  * Refactorizado siguiendo Clean Architecture y SOLID
  * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
+ * - Usa inject() moderno, input signals, output() y effect()
  */
 @Component({
   selector: 'app-productos-edit',
@@ -16,39 +17,43 @@ import { UpdateProductoUseCase } from '../../../../core/application/use-cases/up
   templateUrl: './productos-edit.component.html',
   styleUrl: './productos-edit.component.scss'
 })
-export class ProductosEditComponent implements OnInit {
-  @Input() productoAEditar!: ProductoFinanciero;
-  @Output() productoGuardado = new EventEmitter<void>();
+export class ProductosEditComponent {
+  // Enfoque moderno: input signals
+  productoAEditar = input.required<ProductoFinanciero>();
+  
+  // Enfoque moderno: output()
+  productoGuardado = output<void>();
 
-  productoForm: ReturnType<FormBuilder['group']>;
+  // Enfoque moderno: inject()
+  private readonly fb = inject(FormBuilder);
+  private readonly updateProductoUseCase = inject(UpdateProductoUseCase);
+  
+  productoForm = this.fb.group({
+    id: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\-]+$/)]],
+    name: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
+    description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
+    logo: ['', Validators.required],
+    date_release: ['', Validators.required],
+    date_revision: ['', Validators.required]
+  });
 
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly updateProductoUseCase: UpdateProductoUseCase
-  ) {
-    this.productoForm = this.fb.group({
-      id: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9\-]+$/)]],
-      name: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(100)]],
-      description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(200)]],
-      logo: ['', Validators.required],
-      date_release: ['', Validators.required],
-      date_revision: ['', Validators.required]
+  // Enfoque moderno: effect() para reaccionar a cambios en input signals
+  constructor() {
+    effect(() => {
+      const producto = this.productoAEditar();
+      if (producto) {
+        const formattedProducto = {
+          id: producto.id,
+          name: producto.name,
+          description: producto.description,
+          logo: producto.logo,
+          date_release: this.formatDate(producto.dateRelease),
+          date_revision: this.formatDate(producto.dateRevision)
+        };
+
+        this.productoForm.patchValue(formattedProducto);
+      }
     });
-  }
-
-  ngOnInit(): void {
-    if (this.productoAEditar) {
-      const formattedProducto = {
-        id: this.productoAEditar.id,
-        name: this.productoAEditar.name,
-        description: this.productoAEditar.description,
-        logo: this.productoAEditar.logo,
-        date_release: this.formatDate(this.productoAEditar.dateRelease),
-        date_revision: this.formatDate(this.productoAEditar.dateRevision)
-      };
-
-      this.productoForm.patchValue(formattedProducto);
-    }
   }
 
   private formatDate(dateValue: Date): string {
@@ -66,12 +71,12 @@ export class ProductosEditComponent implements OnInit {
         
         // Crear la entidad del dominio
         const producto = new ProductoFinanciero(
-          formValue.id,
-          formValue.name,
-          formValue.description,
-          formValue.logo,
-          new Date(formValue.date_release),
-          new Date(formValue.date_revision)
+          formValue.id!,
+          formValue.name!,
+          formValue.description!,
+          formValue.logo!,
+          new Date(formValue.date_release!),
+          new Date(formValue.date_revision!)
         );
 
         // Ejecutar el caso de uso
@@ -95,8 +100,18 @@ export class ProductosEditComponent implements OnInit {
   }
 
   onReset(): void {
-    if (this.productoAEditar) {
-      this.ngOnInit();
+    const producto = this.productoAEditar();
+    if (producto) {
+      const formattedProducto = {
+        id: producto.id,
+        name: producto.name,
+        description: producto.description,
+        logo: producto.logo,
+        date_release: this.formatDate(producto.dateRelease),
+        date_revision: this.formatDate(producto.dateRevision)
+      };
+
+      this.productoForm.patchValue(formattedProducto);
     }
   }
 }

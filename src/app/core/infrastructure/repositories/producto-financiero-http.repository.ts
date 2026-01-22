@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -9,14 +9,14 @@ import { ProductoFinanciero } from '../../domain/entities/producto-financiero.en
  * Implementación concreta del repositorio usando HttpClient
  * Capa de infraestructura - Detalles de implementación
  * Dependency Inversion Principle: Implementa la interfaz del dominio
+ * Usa inject() moderno de Angular
  */
 @Injectable({
     providedIn: 'root'
 })
 export class ProductoFinancieroHttpRepository implements IProductoFinancieroRepository {
     private readonly apiUrl = 'http://localhost:3002/bp/products';
-
-    constructor(private readonly http: HttpClient) { }
+    private readonly http = inject(HttpClient);
 
     getAll(): Observable<ProductoFinanciero[]> {
         return this.http.get<{ data: any[] }>(this.apiUrl).pipe(

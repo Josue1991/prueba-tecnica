@@ -54,7 +54,7 @@ describe('ProductosListComponent', () => {
     it('should load productos on init', () => {
       // Assert
       expect(mockGetAllProductosUseCase.execute).toHaveBeenCalled();
-      expect(component.productos.length).toBe(3);
+      expect(component.productos().length).toBe(3);
     });
 
     it('should handle load error', () => {
@@ -76,14 +76,14 @@ describe('ProductosListComponent', () => {
   describe('Pagination', () => {
     it('should paginate data correctly', () => {
       // Arrange
-      component.pageSize = 2;
-      component.currentPage = 1;
+      component.pageSize.set(2);
+      component.currentPage.set(1);
 
-      // Act
-      component.applyFilters();
+      // Act - computed signals se actualizan automáticamente
+      fixture.detectChanges();
 
       // Assert
-      expect(component.paginatedData.length).toBeLessThanOrEqual(2);
+      expect(component.paginatedData().length).toBeLessThanOrEqual(2);
     });
 
     it('should change page size', () => {
@@ -94,34 +94,35 @@ describe('ProductosListComponent', () => {
       component.onPageSizeChange(event);
 
       // Assert
-      expect(component.pageSize).toBe(10);
-      expect(component.currentPage).toBe(1);
+      expect(component.pageSize()).toBe(10);
+      expect(component.currentPage()).toBe(1);
     });
   });
 
   describe('Search', () => {
     it('should filter productos by search term', () => {
       // Arrange
-      component.searchTerm = 'Product 1';
+      component.searchTerm.set('Product 1');
 
       // Act
       component.onSearchChange();
+      fixture.detectChanges();
 
       // Assert
-      expect(component.filteredData.length).toBe(1);
-      expect(component.filteredData[0].name).toBe('Product 1');
+      expect(component.filteredData().length).toBe(1);
+      expect(component.filteredData()[0].name).toBe('Product 1');
     });
 
     it('should reset to page 1 on search', () => {
       // Arrange
-      component.currentPage = 3;
-      component.searchTerm = 'test';
+      component.currentPage.set(3);
+      component.searchTerm.set('test');
 
       // Act
       component.onSearchChange();
 
       // Assert
-      expect(component.currentPage).toBe(1);
+      expect(component.currentPage()).toBe(1);
     });
   });
 
@@ -131,9 +132,9 @@ describe('ProductosListComponent', () => {
       component.openModal();
 
       // Assert
-      expect(component.showModal).toBeTrue();
-      expect(component.action).toBe('crear');
-      expect(component.productosSel).toBeUndefined();
+      expect(component.showModal()).toBeTrue();
+      expect(component.action()).toBe('crear');
+      expect(component.productosSel()).toBeUndefined();
     });
 
     it('should open modal for editing producto', () => {
@@ -144,9 +145,9 @@ describe('ProductosListComponent', () => {
       component.openEditModal(producto);
 
       // Assert
-      expect(component.showModal).toBeTrue();
-      expect(component.action).toBe('editar');
-      expect(component.productosSel).toBe(producto);
+      expect(component.showModal()).toBeTrue();
+      expect(component.action()).toBe('editar');
+      expect(component.productosSel()).toBe(producto);
     });
 
     it('should open modal for deleting producto', () => {
@@ -157,20 +158,20 @@ describe('ProductosListComponent', () => {
       component.onEliminar(producto);
 
       // Assert
-      expect(component.showModal).toBeTrue();
-      expect(component.action).toBe('eliminar');
-      expect(component.productosSel).toBe(producto);
+      expect(component.showModal()).toBeTrue();
+      expect(component.action()).toBe('eliminar');
+      expect(component.productosSel()).toBe(producto);
     });
 
     it('should close modal', () => {
       // Arrange
-      component.showModal = true;
+      component.showModal.set(true);
 
       // Act
       component.closeModal();
 
       // Assert
-      expect(component.showModal).toBeFalse();
+      expect(component.showModal()).toBeFalse();
     });
   });
 
@@ -183,31 +184,31 @@ describe('ProductosListComponent', () => {
       component.toggleMenu(producto);
 
       // Assert
-      expect(component.openedMenuId).toBe(producto.id);
+      expect(component.openedMenuId()).toBe(producto.id);
     });
 
     it('should close menu when toggling same producto', () => {
       // Arrange
       const producto = mockProductos[0];
-      component.openedMenuId = producto.id;
+      component.openedMenuId.set(producto.id);
 
       // Act
       component.toggleMenu(producto);
 
       // Assert
-      expect(component.openedMenuId).toBeNull();
+      expect(component.openedMenuId()).toBeNull();
     });
 
     it('should close menu after delay', (done) => {
       // Arrange
-      component.openedMenuId = 'some-id';
+      component.openedMenuId.set('some-id');
 
       // Act
       component.closeMenu();
 
       // Assert
       setTimeout(() => {
-        expect(component.openedMenuId).toBeNull();
+        expect(component.openedMenuId()).toBeNull();
         done();
       }, 250);
     });

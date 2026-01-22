@@ -3,7 +3,7 @@
 </div>
 <div class="product-table-wrapper">
   <div class="header">
-    <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search..."
+    <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event); onSearchChange()" placeholder="Search..."
       class="search-input" />
     <button class="add-button" (click)="openModal()">Agregar</button>
   </div>
@@ -51,7 +51,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of paginatedData">
+        <tr *ngFor="let item of paginatedData()">
           <td>
             <div class="avatar">{{ item.name ? item.name.substring(0, 2).toUpperCase() : 'JG' }}</div>
           </td>
@@ -64,14 +64,14 @@
               <button class="menu-button">
                 ⋮
               </button>
-              <div class="dropdown-menu" *ngIf="openedMenuId === item.id">
+              <div class="dropdown-menu" *ngIf="openedMenuId() === item.id">
                 <button (click)="openEditModal(item)">Editar</button>
                 <button (click)="onEliminar(item)">Eliminar</button>
               </div>
             </div>
           </td>
         </tr>
-        <tr *ngIf="paginatedData.length === 0">
+        <tr *ngIf="paginatedData().length === 0">
           <td colspan="6" class="empty-message">
             No se encontraron productos
           </td>
@@ -81,24 +81,24 @@
   </div>
 
   <div class="footer">
-    <span>{{ paginatedData.length }} Resultados</span>
-    <select (change)="onPageSizeChange($event)">
-      <option *ngFor="let size of pageSizes" [value]="size" [selected]="size === pageSize">{{ size }}</option>
+    <span>{{ paginatedData().length }} Resultados</span>
+    <select [value]="pageSize()" (change)="onPageSizeChange($event)">
+      <option *ngFor="let size of pageSizes" [value]="size">{{ size }}</option>
     </select>
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="showModal">
-  <div class="modal-content" *ngIf="productosSel == undefined && action === 'crear'">
+<div class="modal-overlay" *ngIf="showModal()">
+  <div class="modal-content" *ngIf="productosSel() == undefined && action() === 'crear'">
     <button class="modal-close" (click)="closeModal()">✖</button>
     <app-productos-create (productoGuardado)="onProductoGuardado()"></app-productos-create>
   </div>
-  <div class="modal-content" *ngIf="productosSel != undefined && action === 'editar'">
+  <div class="modal-content" *ngIf="productosSel() != undefined && action() === 'editar'">
     <button class="modal-close" (click)="closeModal()">✖</button>
-    <app-productos-edit [productoAEditar]="productosSel" (productoGuardado)="onProductoGuardado()"></app-productos-edit>
+    <app-productos-edit [productoAEditar]="productosSel()!" (productoGuardado)="onProductoGuardado()"></app-productos-edit>
   </div>
-  <div class="modal-content" *ngIf="productosSel != undefined && action === 'eliminar'">
+  <div class="modal-content" *ngIf="productosSel() != undefined && action() === 'eliminar'">
     <button class="modal-close" (click)="closeModal()">✖</button>
-    <app-productos-delete [productoAEliminar]="productosSel" (productoEliminado)="onProductoEliminado()"></app-productos-delete>
+    <app-productos-delete [productoAEliminar]="productosSel()!" (productoEliminado)="onProductoEliminado()"></app-productos-delete>
   </div>
 </div>

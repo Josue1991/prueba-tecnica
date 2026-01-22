@@ -36,8 +36,8 @@ describe('ProductosEditComponent', () => {
     fixture = TestBed.createComponent(ProductosEditComponent);
     component = fixture.componentInstance;
     
-    // Provide input
-    component.productoAEditar = new ProductoFinanciero(
+    // Configurar input signal
+    const productoTest = new ProductoFinanciero(
       'test-id',
       'Test Product Name',
       'Test Description with enough length',
@@ -45,6 +45,7 @@ describe('ProductosEditComponent', () => {
       new Date('2025-01-01'),
       new Date('2026-01-01')
     );
+    fixture.componentRef.setInput('productoAEditar', productoTest);
     
     fixture.detectChanges();
   });
@@ -53,10 +54,8 @@ describe('ProductosEditComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize form with producto data on ngOnInit', () => {
-    // Act
-    component.ngOnInit();
-
+  it('should initialize form with producto data via effect', () => {
+    // El effect ya se ejecutó con detectChanges
     // Assert
     expect(component.productoForm.get('id')?.value).toBe('test-id');
     expect(component.productoForm.get('name')?.value).toBe('Test Product Name');
@@ -187,13 +186,13 @@ describe('ProductosEditComponent', () => {
         name: 'Changed Name',
         description: 'Changed Description'
       });
-      spyOn(component, 'ngOnInit');
 
       // Act
       component.onReset();
 
-      // Assert
-      expect(component.ngOnInit).toHaveBeenCalled();
+      // Assert - El formulario debe volver a los valores originales
+      expect(component.productoForm.get('name')?.value).toBe('Test Product Name');
+      expect(component.productoForm.get('description')?.value).toBe('Test Description with enough length');
     });
   });
 
