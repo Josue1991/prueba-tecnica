@@ -5,12 +5,6 @@ import { catchError, map } from 'rxjs/operators';
 import { IProductoFinancieroRepository } from '../../domain/repositories/producto-financiero.repository.interface';
 import { ProductoFinanciero } from '../../domain/entities/producto-financiero.entity';
 
-/**
- * Implementación concreta del repositorio usando HttpClient
- * Capa de infraestructura - Detalles de implementación
- * Dependency Inversion Principle: Implementa la interfaz del dominio
- * Usa inject() moderno de Angular
- */
 @Injectable({
     providedIn: 'root'
 })

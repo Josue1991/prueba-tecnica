@@ -10,13 +10,6 @@ import { FilterService } from '../../../../shared/services/filter.service';
 import { SortService, SortDirection } from '../../../../shared/services/sort.service';
 import { ProductosDeleteComponent } from '../productos-delete/productos-delete.component';
 
-/**
- * Componente de lista de productos
- * Refactorizado siguiendo Clean Architecture y SOLID
- * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
- * - Delega responsabilidades a servicios especializados (Single Responsibility)
- * - Usa signals, computed, inject() y effect() - Enfoque moderno de Angular
- */
 @Component({
   selector: 'app-productos-list',
   imports: [
@@ -31,13 +24,11 @@ import { ProductosDeleteComponent } from '../productos-delete/productos-delete.c
   standalone: true
 })
 export class ProductosListComponent {
-  // Enfoque moderno: inject()
   private readonly getAllProductosUseCase = inject(GetAllProductosUseCase);
   private readonly paginationService = inject(PaginationService);
   private readonly filterService = inject(FilterService);
   private readonly sortService = inject(SortService);
 
-  // Enfoque moderno: signals para estado reactivo
   productos = signal<ProductoFinanciero[]>([]);
   productosSel = signal<ProductoFinanciero | undefined>(undefined);
   action = signal<'crear' | 'editar' | 'eliminar'>('crear');
@@ -53,22 +44,16 @@ export class ProductosListComponent {
   
   openedMenuId = signal<string | null>(null);
 
-  // Enfoque moderno: computed para valores derivados
   filteredData = computed(() => {
     let data = this.productos();
-    
-    // Aplicar filtrado
     const term = this.searchTerm();
     if (term) {
       data = this.filterService.filter(data, term, ['name', 'description']);
     }
-    
-    // Aplicar ordenamiento
     const column = this.sortColumn();
     if (column) {
       data = this.sortService.sort(data, column, this.sortDirection());
     }
-    
     return data;
   });
 
@@ -123,7 +108,6 @@ export class ProductosListComponent {
 
   sortBy(column: keyof ProductoFinanciero): void {
     if (this.sortColumn() === column) {
-      // Alternar dirección
       this.sortDirection.set(this.sortService.toggleDirection(this.sortDirection()));
     } else {
       this.sortColumn.set(column);

@@ -1,17 +1,9 @@
 import { Injectable } from '@angular/core';
 
-/**
- * Servicio de filtrado
- * Single Responsibility Principle: Solo se encarga de la lógica de filtrado
- */
 @Injectable({
     providedIn: 'root'
 })
 export class FilterService {
-    /**
-     * Filtra un array de objetos por un término de búsqueda
-     * Busca en las propiedades especificadas
-     */
     filter<T>(
         data: T[],
         searchTerm: string,

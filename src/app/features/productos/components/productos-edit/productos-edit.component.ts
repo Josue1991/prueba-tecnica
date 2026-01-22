@@ -4,12 +4,6 @@ import { CommonModule } from '@angular/common';
 import { ProductoFinanciero } from '../../../../core/domain/entities/producto-financiero.entity';
 import { UpdateProductoUseCase } from '../../../../core/application/use-cases/update-producto.use-case';
 
-/**
- * Componente de edición de productos
- * Refactorizado siguiendo Clean Architecture y SOLID
- * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
- * - Usa inject() moderno, input signals, output() y effect()
- */
 @Component({
   selector: 'app-productos-edit',
   standalone: true,
@@ -18,13 +12,8 @@ import { UpdateProductoUseCase } from '../../../../core/application/use-cases/up
   styleUrl: './productos-edit.component.scss'
 })
 export class ProductosEditComponent {
-  // Enfoque moderno: input signals
   productoAEditar = input.required<ProductoFinanciero>();
-  
-  // Enfoque moderno: output()
   productoGuardado = output<void>();
-
-  // Enfoque moderno: inject()
   private readonly fb = inject(FormBuilder);
   private readonly updateProductoUseCase = inject(UpdateProductoUseCase);
   
@@ -37,7 +26,6 @@ export class ProductosEditComponent {
     date_revision: ['', Validators.required]
   });
 
-  // Enfoque moderno: effect() para reaccionar a cambios en input signals
   constructor() {
     effect(() => {
       const producto = this.productoAEditar();
@@ -68,8 +56,6 @@ export class ProductosEditComponent {
     if (this.productoForm.valid) {
       try {
         const formValue = this.productoForm.getRawValue();
-        
-        // Crear la entidad del dominio
         const producto = new ProductoFinanciero(
           formValue.id!,
           formValue.name!,
@@ -79,7 +65,6 @@ export class ProductosEditComponent {
           new Date(formValue.date_revision!)
         );
 
-        // Ejecutar el caso de uso
         this.updateProductoUseCase.execute(producto).subscribe({
           next: () => {
             alert('Producto actualizado exitosamente');

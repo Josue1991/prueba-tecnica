@@ -3,10 +3,6 @@ import { Observable } from 'rxjs';
 import { ProductoFinanciero } from '../../domain/entities/producto-financiero.entity';
 import { PRODUCTO_FINANCIERO_REPOSITORY } from '../../domain/injection-tokens';
 
-/**
- * Caso de uso: Obtener todos los productos financieros
- * Single Responsibility Principle: Una sola razón de cambio
- */
 @Injectable({
     providedIn: 'root'
 })

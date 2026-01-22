@@ -4,12 +4,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ProductoFinanciero } from '../../../../core/domain/entities/producto-financiero.entity';
 import { DeleteProductoUseCase } from '../../../../core/application/use-cases/delete-producto.use-case';
 
-/**
- * Componente de eliminación de productos
- * Refactorizado siguiendo Clean Architecture y SOLID
- * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
- * - Usa inject() moderno, input signals y output()
- */
 @Component({
   selector: 'app-productos-delete',
   standalone: true,
@@ -18,13 +12,8 @@ import { DeleteProductoUseCase } from '../../../../core/application/use-cases/de
   styleUrl: './productos-delete.component.scss'
 })
 export class ProductosDeleteComponent {
-  // Enfoque moderno: input signals
   productoAEliminar = input.required<ProductoFinanciero>();
-  
-  // Enfoque moderno: output()
   productoEliminado = output<void>();
-
-  // Enfoque moderno: inject()
   private readonly deleteProductoUseCase = inject(DeleteProductoUseCase);
 
   onDelete(item: ProductoFinanciero): void {

@@ -4,12 +4,6 @@ import { Validators, FormBuilder, ReactiveFormsModule, FormsModule } from '@angu
 import { CreateProductoUseCase } from '../../../../core/application/use-cases/create-producto.use-case';
 import { ProductoFinanciero } from '../../../../core/domain/entities/producto-financiero.entity';
 
-/**
- * Componente de creación de productos
- * Refactorizado siguiendo Clean Architecture y SOLID
- * - Usa casos de uso en lugar de servicios directos (Dependency Inversion)
- * - Usa inject() moderno y output()
- */
 @Component({
   selector: 'app-productos-create',
   imports: [FormsModule, CommonModule, ReactiveFormsModule],
@@ -17,10 +11,7 @@ import { ProductoFinanciero } from '../../../../core/domain/entities/producto-fi
   styleUrl: './productos-create.component.scss'
 })
 export class ProductosCreateComponent {
-  // Enfoque moderno: output()
   productoGuardado = output<void>();
-  
-  // Enfoque moderno: inject()
   private readonly fb = inject(FormBuilder);
   private readonly createProductoUseCase = inject(CreateProductoUseCase);
   
@@ -37,8 +28,6 @@ export class ProductosCreateComponent {
     if (this.productoForm.valid) {
       try {
         const formValue = this.productoForm.getRawValue();
-        
-        // Crear la entidad del dominio
         const producto = new ProductoFinanciero(
           formValue.id!,
           formValue.name!,
@@ -48,7 +37,6 @@ export class ProductosCreateComponent {
           new Date(formValue.date_revision!)
         );
 
-        // Ejecutar el caso de uso
         this.createProductoUseCase.execute(producto).subscribe({
           next: () => {
             alert('Producto creado exitosamente');
